@@ -10,7 +10,7 @@ This plugin integrates KeePass with the KeePass Tusk browser extension by exposi
 ## Installation instructions
 
 1. Download and install [KeePass 2.x](https://keepass.info/download.html) if not already installed.
-2. Download KeePassDbHttp.plgx and move it to the **Plugins** directory in the KeePass installation.
+2. Download [KeePassDbHttp.plgx](https://github.com/henryptung/KeePassDbHttp/releases) and move it to the **Plugins** directory in the KeePass installation.
 3. Restart KeePass.
 
 ## Integrating with KeePass Tusk
