@@ -41,6 +41,7 @@ namespace KeePassDbHttp
                 if (UIUtil.ShowDialogAndDestroy(form) == DialogResult.OK)
                 {
                     form.Update(m_options);
+                    m_host.MainWindow.SaveConfig();
                     try
                     {
                         StopServer();
