@@ -37,7 +37,6 @@ namespace KeePassDbHttp
                 }
 
                 await stopped.Task;
-                token.ThrowIfCancellationRequested();
             }
         }
 
