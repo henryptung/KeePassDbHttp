@@ -1,4 +1,6 @@
 ﻿using KeePass.App.Configuration;
+using KeePass.Forms;
+using KeePass.Plugins;
 using System;
 
 namespace KeePassDbHttp
@@ -7,20 +9,35 @@ namespace KeePassDbHttp
     {
         private const string PORT_PARAM = "KeePassDbHttp_Port";
         private const string FILENAME_PARAM = "KeePassDbHttp_Filename";
+        
+        private readonly IPluginHost m_host;
 
-        private readonly AceCustomConfig m_config;
-
-        public KeePassDbHttpOptions(AceCustomConfig config)
+        private KeePassDbHttpOptions(IPluginHost host)
         {
-            InitConfig(config);
-            m_config = config;
+            this.m_host = host;
         }
 
-        private static void InitConfig(AceCustomConfig config)
+        public static KeePassDbHttpOptions Initialize(IPluginHost host)
         {
-            if (config.GetString(FILENAME_PARAM) == null)
+            var options = new KeePassDbHttpOptions(host);
+            options.Modify(transaction =>
             {
-                config.SetString(FILENAME_PARAM, Guid.NewGuid().ToString());
+                if (transaction.Filename == null)
+                {
+                    transaction.Filename = Guid.NewGuid().ToString();
+                    return true;
+                }
+                return false;
+            });
+
+            return options;
+        }
+
+        private AceCustomConfig config
+        {
+            get
+            {
+                return m_host.CustomConfig;
             }
         }
 
@@ -28,11 +45,7 @@ namespace KeePassDbHttp
         {
             get
             {
-                return m_config.GetString(FILENAME_PARAM);
-            }
-            set
-            {
-                m_config.SetString(FILENAME_PARAM, value);
+                return config.GetString(FILENAME_PARAM);
             }
         }
 
@@ -40,12 +53,41 @@ namespace KeePassDbHttp
         {
             get
             {
-                return (uint) m_config.GetULong(PORT_PARAM, 20136);
+                return (uint) config.GetULong(PORT_PARAM, 20136);
             }
-            set
+        }
+
+        public bool Modify(Func<Transaction, bool> modifier)
+        {
+            var transaction = new TransactionInstance(this);
+            if (!modifier.Invoke(transaction))
             {
-                m_config.SetULong(PORT_PARAM, value);
+                return false;
             }
+
+            config.SetString(FILENAME_PARAM, transaction.Filename);
+            config.SetULong(PORT_PARAM, transaction.Port);
+
+            m_host.MainWindow.SaveConfig();
+            return true;
+        }
+
+        private sealed class TransactionInstance : Transaction
+        {
+            public string Filename { get; set; }
+            public uint Port { get; set; }
+
+            public TransactionInstance(KeePassDbHttpOptions options)
+            {
+                this.Filename = options.Filename;
+                this.Port = options.Port;
+            }
+        }
+
+        public interface Transaction
+        {
+            string Filename { get; set; }
+            uint Port { get; set; }
         }
     }
 }

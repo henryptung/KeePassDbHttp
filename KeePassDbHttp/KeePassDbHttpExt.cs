@@ -22,7 +22,7 @@ namespace KeePassDbHttp
         public override bool Initialize(IPluginHost host)
         {
             m_host = host;
-            m_options = new KeePassDbHttpOptions(m_host.CustomConfig);
+            m_options = KeePassDbHttpOptions.Initialize(m_host);
             m_optionsItem = NewOptionsMenuItem();
             m_host.MainWindow.ToolsMenu.DropDownItems.Add(m_optionsItem);
 
@@ -37,11 +37,14 @@ namespace KeePassDbHttp
             item.Text = "KeePassDbHttp Options...";
             item.Click += (sender, e) =>
             {
-                var form = new KeePassDbHttpOptionsForm(m_options);
-                if (UIUtil.ShowDialogAndDestroy(form) == DialogResult.OK)
+                bool changed = m_options.Modify(transaction =>
                 {
-                    form.Update(m_options);
-                    m_host.MainWindow.SaveConfig();
+                    var form = new KeePassDbHttpOptionsForm(transaction);
+                    return UIUtil.ShowDialogAndDestroy(form) == DialogResult.OK;
+                });
+
+                if (changed)
+                {
                     try
                     {
                         StopServer();

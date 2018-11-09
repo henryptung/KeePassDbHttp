@@ -5,41 +5,33 @@ namespace KeePassDbHttp
 {
     public partial class KeePassDbHttpOptionsForm : Form
     {
-        private uint m_port;
-        private string m_filename;
+        private KeePassDbHttpOptions.Transaction m_options;
 
-        public KeePassDbHttpOptionsForm(KeePassDbHttpOptions options)
+        public KeePassDbHttpOptionsForm(KeePassDbHttpOptions.Transaction options)
         {
             InitializeComponent();
-            m_port = options.Port;
-            m_filename = options.Filename;
 
-            portField.Value = m_port;
-            filenameField.Text = m_filename;
+            m_options = options;
+            portField.Value = options.Port;
+            filenameField.Text = options.Filename;
             UpdateUrl();
         }
 
         private void portField_ValueChanged(object sender, EventArgs e)
         {
-            m_port = (uint)portField.Value;
+            m_options.Port = (uint)portField.Value;
             UpdateUrl();
         }
 
         private void filenameField_TextChanged(object sender, EventArgs e)
         {
-            m_filename = filenameField.Text;
+            m_options.Filename = filenameField.Text;
             UpdateUrl();
         }
 
         private void UpdateUrl()
         {
-            urlDisplay.Text = String.Format("http://localhost:{0}/{1}.kdbx", m_port, m_filename);
-        }
-
-        public void Update(KeePassDbHttpOptions options)
-        {
-            options.Port = m_port;
-            options.Filename = m_filename;
+            urlDisplay.Text = String.Format("http://localhost:{0}/{1}.kdbx", portField.Value, filenameField.Text);
         }
 
         private void copyToClipboard_Click(object sender, EventArgs e)
